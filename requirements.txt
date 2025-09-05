@@ -1,0 +1,9 @@
+Flask
+gunicorn
+numpy
+Pillow
+tqdm
+faiss-cpu
+sentence-transformers
+torch
+torchvision

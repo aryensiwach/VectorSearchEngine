@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vector Image Search Engine</title>
+    <style>
+        /* Modern Font from Google Fonts */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+        /* Futuristic Dark Theme Styling */
+        :root {
+            --primary-color: #9f55ff; /* Vibrant Purple */
+            --primary-hover: #bf8bff;
+            --background-color: #121212; /* Near Black */
+            --card-background: #1e1e1e; /* Dark Grey */
+            --text-color: #e0e0e0; /* Light Grey */
+            --border-color: #333333;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+            --glow-shadow: 0 0 15px rgba(159, 85, 255, 0.2);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column; /* To stack container and footer */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* Card Style */
+        .card {
+            background-color: var(--card-background);
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #aaa;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Form Styling */
+        #upload-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            cursor: pointer;
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            transition: border-color 0.3s, background-color 0.3s;
+        }
+
+        .file-input-wrapper:hover {
+            border-color: var(--primary-color);
+            background-color: #252525;
+        }
+        
+        #file-input {
+            display: none;
+        }
+
+        #file-label {
+            color: #999;
+            font-weight: 500;
+        }
+        
+        #preview {
+            max-width: 150px;
+            max-height: 150px;
+            border-radius: 8px;
+            margin-top: 1rem;
+            display: none; /* Initially hidden */
+            border: 2px solid var(--border-color);
+        }
+        
+        .btn {
+            background: linear-gradient(45deg, #8a2be2, var(--primary-color));
+            color: white;
+            padding: 0.9rem 2rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(159, 85, 255, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(159, 85, 255, 0.4);
+        }
+
+        /* Results Styling */
+        #results {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .result-image-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 2px solid var(--border-color);
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+        }
+        
+        .result-image-wrapper:hover {
+            transform: scale(1.05);
+            border-color: var(--primary-color);
+            box-shadow: var(--glow-shadow);
+        }
+
+        .result-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        
+        /* Loader and Status Styling */
+        #status {
+            text-align: center;
+            margin: 2rem 0;
+            font-weight: 500;
+            display: none; /* Initially hidden */
+        }
+        
+        .loader {
+            border: 5px solid #333;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 1rem auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Error Message */
+        .error {
+            color: #ff6b6b;
+        }
+        
+        /* Footer Styling */
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1rem;
+            color: #666; /* Thoda halka text color */
+            font-size: 0.9rem;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="card">
+            <h1>Vector Image Search Engine</h1>
+            <p class="subtitle">Upload an image to find visually similar ones from the database.</p>
+            
+            <form id="upload-form">
+                <label for="file-input" class="file-input-wrapper">
+                    <span id="file-label">Click here to choose an image</span>
+                    <img id="preview" src="#" alt="Image Preview"/>
+                </label>
+                <input type="file" id="file-input" name="file" accept="image/*">
+                
+                <button type="submit" class="btn">Find Similar Images</button>
+            </form>
+        </div>
+
+        <div id="status">
+            <div class="loader"></div>
+            <p>Searching for similar images... please wait.</p>
+        </div>
+        
+        <div id="results">
+            <!-- Search results will be displayed here -->
+        </div>
+    </div>
+    
+    <!-- Developer Credit Footer -->
+    <footer>
+        <p>Developed with ❤️ by Aryendra Chaudhary</p>
+    </footer>
+
+    <script>
+        const form = document.getElementById('upload-form');
+        const fileInput = document.getElementById('file-input');
+        const resultsDiv = document.getElementById('results');
+        const statusDiv = document.getElementById('status');
+        const previewImg = document.getElementById('preview');
+        const fileLabel = document.getElementById('file-label');
+
+        // Show image preview when a file is selected
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    fileLabel.style.display = 'none'; // Hide the text label
+                }
+                reader.readAsDataURL(file);
+            } else {
+                // Reset if no file is chosen
+                previewImg.style.display = 'none';
+                fileLabel.style.display = 'block';
+            }
+        });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            if (!fileInput.files[0]) {
+                alert('Please select an image file first.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            // Show loader and hide results
+            statusDiv.style.display = 'block';
+            statusDiv.classList.remove('error');
+            statusDiv.querySelector('.loader').style.display = 'block';
+            statusDiv.querySelector('p').textContent = 'Searching... please wait.';
+            resultsDiv.innerHTML = '';
+
+            try {
+                const response = await fetch('/search', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    if (response.status === 400) {
+                         throw new Error('This file could not be processed. Please try another image.');
+                    }
+                    throw new Error(`Server responded with an unexpected status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                statusDiv.style.display = 'none';
+
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (data.results && data.results.length > 0) {
+                    displayResults(data.results);
+                } else {
+                    resultsDiv.innerHTML = '<p style="text-align: center;">No similar images were found in the database.</p>';
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                statusDiv.style.display = 'block';
+                statusDiv.classList.add('error');
+                statusDiv.querySelector('.loader').style.display = 'none';
+                statusDiv.querySelector('p').textContent = `An error occurred: ${error.message}`;
+            }
+        });
+
+        function displayResults(imagePaths) {
+            resultsDiv.innerHTML = ''; // Clear previous results
+            imagePaths.forEach(path => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'result-image-wrapper';
+                
+                const img = document.createElement('img');
+                img.src = path;
+                img.alt = 'Similar Image';
+                img.className = 'result-image';
+                
+                wrapper.appendChild(img);
+                resultsDiv.appendChild(wrapper);
+            });
+        }
+    </script>
+
+</body>
+</html>
+
