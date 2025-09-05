@@ -5,9 +5,10 @@ A high-performance, content-based image retrieval system built with Python, Flas
 Here's a look at the application's user interface and search results.
 
 1. Main Interface - Ready to Search
+   (<img width="1905" height="916" alt="Image" src="https://github.com/user-attachments/assets/d5d3d27d-a31b-4567-8318-edd056b85120" />)
 
-2. Search Results - Similar Images Found
-   )
+3. Search Results - Similar Images Found
+   (<img width="896" height="904" alt="Image" src="https://github.com/user-attachments/assets/ed4341ca-a861-4a24-8904-a4348a8a7811" />)
 
 🚀 Features
 Content-Based Search: Finds images based on visual similarity (shapes, patterns, concepts).
