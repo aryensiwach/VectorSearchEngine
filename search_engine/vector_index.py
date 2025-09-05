@@ -1,75 +1,67 @@
+# search_engine/vector_index.py
+
 import os
 import faiss
 import numpy as np
 from tqdm import tqdm
+from .embedder import ImageEmbedder
 
 class VectorIndex:
-    """
-    Yeh class image vectors ka ek searchable index (library) banati aur manage karti hai.
-    Yeh FAISS library ka use karti hai jo bahut fast similarity search karti hai.
-    """
-    def __init__(self, embedder):
-        """
-        Index ko initialize karta hai.
+    
+    def __init__(self, embedder: ImageEmbedder):
         
-        Args:
-            embedder (ImageEmbedder): Image ko vector mein badalne wala object.
-        """
         self.embedder = embedder
         self.index = None
         self.image_paths = []
 
-    def build(self, image_folder):
-        """
-        Diye gaye folder se saari images ko process karke ek naya FAISS index banata hai.
+    def build(self, image_folder: str):
+       
+        self.image_paths = [
+            os.path.join(image_folder, f)
+            for f in os.listdir(image_folder)
+            if f.lower().endswith(('.png', '.jpg', '.jpeg'))
+        ]
         
-        Args:
-            image_folder (str): Us folder ka path jahan saari database images rakhi hain.
-        """
-        print(f"'{image_folder}' se index banaya ja raha hai...")
-        
-        # Folder mein saari valid image files (.jpg, .png, etc.) ko dhoondho
-        all_files = [os.path.join(image_folder, f) for f in os.listdir(image_folder)
-                     if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
-        
-        print(f"Kul {len(all_files)} images mili.")
-
-        # Saari images ke vectors nikaalo
-        # tqdm ek progress bar dikhata hai taaki pata chale kaam kitna hua
-        embeddings = []
-        for path in tqdm(all_files, desc="Images ko vectors mein badla ja raha hai"):
-            embedding = self.embedder.get_embedding(path)
-            if embedding is not None:
-                embeddings.append(embedding)
-                self.image_paths.append(path)
-        
-        if not embeddings:
-            print("❌ Koi bhi image process nahi ho payi. Folder check karein.")
+        if not self.image_paths:
+            print(f"'{image_folder}' no images found.")
             return
 
-        # Vectors ko FAISS ke liye sahi format (numpy array) mein convert karo
-        embeddings = np.array(embeddings).astype('float32')
-        
-        # FAISS index banayein
-        dimension = embeddings.shape[1]  # Vector ka size (e.g., 512)
-        self.index = faiss.IndexFlatL2(dimension)
-        self.index.add(embeddings)
-        
-        print(f"✅ Index safaltapoorvak ban gaya. Kul {self.index.ntotal} vectors add kiye gaye.")
+        print(f"total {len(self.image_paths)} images found.")
 
-    def save(self, index_path, paths_path):
-        """
-        Banaye gaye index aur image paths ko disk par save karta hai.
+        # Saari images ke liye embeddings (vectors) generate karo
+        print("Images are converting into vectors:")
+        all_embeddings = []
+        for path in tqdm(self.image_paths, desc="Embedding Images"):
+            try:
+                
+                embedding = self.embedder.embed(path)
+                if embedding is not None:
+                    all_embeddings.append(embedding)
+                else:
+                    print(f"Warning: '{path}' embedding failed, skipping this image.")
+            except Exception as e:
+                print(f"Error processing {path}: {e}")
+
+        if not all_embeddings:
+            print("no embeddings generated.")
+            return
+            
+      
+        embeddings_np = np.array(all_embeddings).astype('float32')
         
-        Args:
-            index_path (str): FAISS index file ko save karne ka path.
-            paths_path (str): Image paths ki list ko save karne ka path.
-        """
-        print(f"Index ko '{index_path}' par save kiya ja raha hai...")
-        faiss.write_index(self.index, index_path)
+      
+        dimension = embeddings_np.shape[1]
+        self.index = faiss.IndexFlatL2(dimension)
+        self.index.add(embeddings_np)
+        print(f"FAISS index {len(all_embeddings)} vectors added.")
+
+    def save(self, index_path: str, paths_path: str):
         
-        print(f"Image paths ko '{paths_path}' par save kiya ja raha hai...")
-        np.save(paths_path, np.array(self.image_paths, dtype=object))
-        
-        print("✅ Index aur paths safaltapoorvak save ho gaye.")
+        if self.index:
+            faiss.write_index(self.index, index_path)
+            np.save(paths_path, self.image_paths)
+            print(f"Index '{index_path}' saved.")
+            print(f"Image paths '{paths_path}' saved.")
+        else:
+            print("no index to save.")
 

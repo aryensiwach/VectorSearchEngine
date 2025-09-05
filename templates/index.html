@@ -5,16 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vector Image Search Engine</title>
     <style>
-        /* Modern Font from Google Fonts */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-        /* Futuristic Dark Theme Styling */
         :root {
-            --primary-color: #9f55ff; /* Vibrant Purple */
+            --primary-color: #9f55ff;
             --primary-hover: #bf8bff;
-            --background-color: #121212; /* Near Black */
-            --card-background: #1e1e1e; /* Dark Grey */
-            --text-color: #e0e0e0; /* Light Grey */
+            --background-color: #121212;
+            --card-background: #1e1e1e;
+            --text-color: #e0e0e0;
             --border-color: #333333;
             --shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
             --glow-shadow: 0 0 15px rgba(159, 85, 255, 0.2);
@@ -27,7 +25,7 @@
             margin: 0;
             padding: 2rem;
             display: flex;
-            flex-direction: column; /* To stack container and footer */
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
@@ -38,7 +36,6 @@
             max-width: 900px;
         }
 
-        /* Card Style */
         .card {
             background-color: var(--card-background);
             border-radius: 16px;
@@ -61,7 +58,6 @@
             margin-bottom: 2.5rem;
         }
 
-        /* Form Styling */
         #upload-form {
             display: flex;
             flex-direction: column;
@@ -100,7 +96,7 @@
             max-height: 150px;
             border-radius: 8px;
             margin-top: 1rem;
-            display: none; /* Initially hidden */
+            display: none;
             border: 2px solid var(--border-color);
         }
         
@@ -122,7 +118,6 @@
             box-shadow: 0 6px 20px rgba(159, 85, 255, 0.4);
         }
 
-        /* Results Styling */
         #results {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -151,12 +146,11 @@
             display: block;
         }
         
-        /* Loader and Status Styling */
         #status {
             text-align: center;
             margin: 2rem 0;
             font-weight: 500;
-            display: none; /* Initially hidden */
+            display: none;
         }
         
         .loader {
@@ -174,17 +168,15 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Error Message */
         .error {
             color: #ff6b6b;
         }
         
-        /* Footer Styling */
         footer {
             text-align: center;
             margin-top: 3rem;
             padding: 1rem;
-            color: #666; /* Thoda halka text color */
+            color: #666; 
             font-size: 0.9rem;
         }
 
@@ -214,11 +206,9 @@
         </div>
         
         <div id="results">
-            <!-- Search results will be displayed here -->
         </div>
     </div>
     
-    <!-- Developer Credit Footer -->
     <footer>
         <p>Developed with ❤️ by Aryendra Chaudhary</p>
     </footer>
@@ -231,7 +221,6 @@
         const previewImg = document.getElementById('preview');
         const fileLabel = document.getElementById('file-label');
 
-        // Show image preview when a file is selected
         fileInput.addEventListener('change', () => {
             const file = fileInput.files[0];
             if (file) {
@@ -239,11 +228,10 @@
                 reader.onload = function(e) {
                     previewImg.src = e.target.result;
                     previewImg.style.display = 'block';
-                    fileLabel.style.display = 'none'; // Hide the text label
+                    fileLabel.style.display = 'none';
                 }
                 reader.readAsDataURL(file);
             } else {
-                // Reset if no file is chosen
                 previewImg.style.display = 'none';
                 fileLabel.style.display = 'block';
             }
@@ -260,7 +248,6 @@
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
 
-            // Show loader and hide results
             statusDiv.style.display = 'block';
             statusDiv.classList.remove('error');
             statusDiv.querySelector('.loader').style.display = 'block';
@@ -275,7 +262,7 @@
 
                 if (!response.ok) {
                     if (response.status === 400) {
-                         throw new Error('This file could not be processed. Please try another image.');
+                        throw new Error('This file could not be processed. Please try another image.');
                     }
                     throw new Error(`Server responded with an unexpected status: ${response.status}`);
                 }
@@ -304,7 +291,7 @@
         });
 
         function displayResults(imagePaths) {
-            resultsDiv.innerHTML = ''; // Clear previous results
+            resultsDiv.innerHTML = '';
             imagePaths.forEach(path => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'result-image-wrapper';
